@@ -1,5 +1,5 @@
 from faker import *
-from random import randint
+from random import randint, choice
 
 ZZZAP = 1000
 
@@ -19,5 +19,21 @@ def generateDebtor():
         f.write(line)
     f.close()
 
+def generateHangman():
+    faker = Faker()
+    f = open('hangmans.csv', 'w')
+    for i in range(ZZZAP):
+        HangmanID = i
+        Chief = i - i % 4 if i % 4 != 0 else -1
+        Position = "Chief" if i % 4 == 0 else "Executor"
+        FirstName = faker.first_name()
+        LastName = faker.last_name()
+        TelephoneNum = randint(80000000000, 89999999999)
+        line = "{};{};{};{};{};{}\n".format(HangmanID, Chief, Position, FirstName, LastName, TelephoneNum)
+        f.write(line)
+    f.close()
+
+
 if __name__ == "__main__":
-    generateDebtor()
+#    generateDebtor()
+#    generateHangman()
