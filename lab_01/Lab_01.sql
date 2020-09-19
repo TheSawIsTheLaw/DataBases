@@ -19,7 +19,7 @@ CREATE TABLE LoanSubject(
 DROP TABLE Hangman;
 CREATE TABLE Hangman(
     HangmanID INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
-    Position VARCHAR(8) NOT NULL,
+    Position VARCHAR(10) NOT NULL,
     FirstName VARCHAR(64),
     LastName VARCHAR(64),
     TelephoneNumber VARCHAR(16) NOT NULL
@@ -31,10 +31,11 @@ ALTER TABLE Hangman ADD(
 );
 SELECT * FROM all_constraints
 where table_name LIKE '%HANGMAN';
+-- ДОБАВИТЬ ADD НА CHIEF
 
-DROP TABLE Deptor;
-CREATE TABLE Deptor(
-    DeptorID INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
+DROP TABLE Debtor;
+CREATE TABLE Debtor(
+    DebtorID INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
     FirstName VARCHAR(64) NOT NULL,
     LastName VARCHAR(64) NOT NULL,
     TelephoneNum VARCHAR(16),
@@ -55,6 +56,6 @@ CREATE TABLE Relative(
     LastName VARCHAR(64),
     TelephoneNum VARCHAR(64) NOT NULL,
     HomeAddress VARCHAR(256) NOT NULL,
-    DeptorID INTEGER NOT NULL,
-    FOREIGN KEY (DebtorID) REFERENCES Deptor(DeptorID)
+    DebtorID INTEGER NOT NULL,
+    FOREIGN KEY (DebtorID) REFERENCES Debtor(DebtorID)
 );
