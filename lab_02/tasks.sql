@@ -82,4 +82,46 @@ from HANGMAN;
 -- Проверка на то, что у Бритттани Вагнер нет "клиентов"
 select *
 from DEBTORS
-where HANGMANID = 1
+where HANGMANID = 1;
+
+-- Инструкция select, использующая простое выражение case
+-- Выводим информацию по тому, как давно задолжали люди. Или не совсем люди, там.
+select DEBTORID, FIRSTNAME, LASTNAME,
+        case extract(year from to_date(PURCHASEDATE, 'YYYY-MM-DD'))
+        when extract(year from CURRENT_DATE) then 'Wow. Fresh!'
+        when extract(year from CURRENT_DATE) - 1 then 'Wow, last year!'
+        else cast((extract(year from CURRENT_DATE) - extract(year from to_date(PURCHASEDATE, 'YYYY-MM-DD'))) as varchar(10)) || ' years! Pathetic...'
+        end as yearSpecification
+from DEBTORS join LOANSUBJECTS L on DEBTORS.LOANID = L.LOANID;
+
+select EXTRACT(YEAR FROM '2020-13-12') from LOANSUBJECTS;
+
+-- Инструкция select, использующая поисковое выражение case
+-- Вывести имена людей и их спецификацию по их задолженности
+select DEBTORID, FIRSTNAME, LASTNAME,
+       case
+               when price < 100000 then 'Ok, not so expensive'
+               when price < 500000 then 'Hmm, it is expensive'
+               when price < 3000000 then 'It is so big...'
+               else 'Target to kill'
+        end as specification
+from DEBTORS join LOANSUBJECTS L on DEBTORS.LOANID = L.LOANID;
+
+-- Создание новой временной локальной таблицы из результирующего набора данных инструкций select
+-- Создание новой таблицы, в которой указывается какой палач за какую сумму отвечает
+create global temporary table tempTable (
+    HANGMAN int,
+    MONEY int
+) ON COMMIT DELETE rows;
+
+drop table tempTable;
+
+insert into tempTable (
+    select HANGMANID, SUM(DEBT)
+    from (select HANGMAN.HANGMANID, DEBT
+    from HANGMAN join DEBTORS D on HANGMAN.HANGMANID = D.HANGMANID join LOANSUBJECTS L on D.LOANID = L.LOANID)
+    group by HANGMANID
+    );
+
+select *
+from tempTable;
