@@ -125,3 +125,36 @@ insert into tempTable (
 
 select *
 from tempTable;
+
+-- Инструкция select, использующая вложенные коррелированные подзапросы в качестве производных таблиц в предложении from
+-- Требуется обзвонить всех палачей и сообщить им, какая сумма на них висит. Поэтому посчитаем, сколько на них висит и
+-- выведем их айди, имя, фамилию, номер и сумму, чтобы обзванивать было легче
+select HANGMAN.HANGMANID, FIRSTNAME, LASTNAME, TELEPHONENUMBER, summary
+from HANGMAN join (
+        select HANGMANID, SUM(DEBT) as summary
+        from (select HANGMAN.HANGMANID, DEBT
+        from HANGMAN join DEBTORS D on HANGMAN.HANGMANID = D.HANGMANID join LOANSUBJECTS L on D.LOANID = L.LOANID)
+        group by HANGMANID
+    ) S on HANGMAN.HANGMANID = S.HANGMANID;
+
+-- Иструкция select, использующая вложенные подзапросы с уровнем вложенности 3.
+-- Выводим таблицу, в которой есть информация о палаче и клиенте, который задолжал больше 1/10000 суммарного общего долга...
+
+select BANKS.BANKID, HANGMANID, DEBTORID, TELEPHONENUM, DEBT
+from BANKS join (
+    select HANGMANID, DEBTORID, TELEPHONENUM, DEBT, BANKID
+    from DEBTORS join (
+        select LOANID, DEBT
+        from LOANSUBJECTS
+        where DEBT > (
+            select SUM(PRICE) / 10000 as partOfSum
+            from LOANSUBJECTS
+          )
+        ) T on DEBTORS.LOANID = T.LOANID
+    ) T on BANKS.BANKID = T.BANKID;
+
+-- Инструкция select, консолидирующая данные с помощью предожения group by, но без предложения having
+-- Выводим средние задолженности для каждого банка
+select BANKS.BANKID, AVG(DEBT) as summaryDebt
+from BANKS join DEBTORS D on BANKS.BANKID = D.BANKID join LOANSUBJECTS L on D.LOANID = L.LOANID
+group by BANKS.BANKID;
