@@ -249,3 +249,52 @@ from banksAndMoney;
 
 -- Инструкция select, спользующая рекурсивное обобщённое табличное выражение
 -- Будем выводить иерархию зависимости исполнителей от шефов
+with recurs(CHIEFID, POSITION, HANGMANID, LVL)
+as (
+    select CHIEFID, POSITION, HANGMANID, 0 as LVL
+    from HANGMAN
+    where CHIEFID is null
+    union all
+    select fTable.CHIEFID, fTable.POSITION, fTable.HANGMANID, sTable.LVL + 1
+    from HANGMAN fTable join recurs sTable on fTable.CHIEFID = sTable.HANGMANID
+    )
+select *
+from recurs
+where LVL = 2;
+
+-- Оконные функции. Использование конструкций MIN/MAX/AVG OVER()
+-- Выведем должников с минимальным и максимальным значением долга по банку. Ну ещё и среднее в придачу
+select
+    DEBTORID,
+    FIRSTNAME,
+    LASTNAME,
+    NAME,
+    DEBT,
+    MAX(DEBT) OVER (PARTITION BY NAME) as MAXDEBT,
+    AVG(DEBT) OVER (PARTITION BY NAME) as AVERDEBT,
+    MIN(DEBT) OVER (PARTITION BY NAME) as MINDEBT
+from DEBTORS D join LOANSUBJECTS L on D.LOANID = L.LOANID JOIN BANKS B on D.BANKID = B.BANKID;
+
+-- Пример, отрабатывающий задание:
+select DEBTORID, FIRSTNAME, LASTNAME, NAME, DEBT, MAXDEBT, AVERDEBT, MINDEBT
+from (
+    select
+        DEBTORID,
+        FIRSTNAME,
+        LASTNAME,
+        NAME,
+        DEBT,
+        MAX(DEBT) over (partition by NAME) as MAXDEBT,
+        AVG(DEBT) over (partition by NAME) as AVERDEBT,
+        MIN(DEBT) over (partition by NAME) as MINDEBT
+    from DEBTORS D join LOANSUBJECTS L on D.LOANID = L.LOANID join BANKS B on D.BANKID = B.BANKID
+         )
+where DEBT = MAXDEBT or DEBT = MINDEBT;
+
+-- Оконные функции для устранения дублей
+select *
+from (
+    select dF.FIRSTNAME as dFName, dF.TELEPHONENUM as dFTelephone, dS.FIRSTNAME as dSName, dS.TELEPHONENUM as dSTelephone, row_number() over (partition by dF.TELEPHONENUM order by dF.TELEPHONENUM) as cnt
+    from DEBTORS dF join DEBTORS dS on dF.FIRSTNAME = dS.FIRSTNAME join DEBTORS dT on dT.FIRSTNAME = dS.FIRSTNAME
+         )
+where dFName = 'Amy' and cnt = 1;
