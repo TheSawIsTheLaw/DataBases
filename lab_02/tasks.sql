@@ -154,7 +154,14 @@ from BANKS join (
     ) T on BANKS.BANKID = T.BANKID;
 
 -- Инструкция select, консолидирующая данные с помощью предожения group by, но без предложения having
--- Выводим средние задолженности для каждого банка
-select BANKS.BANKID, AVG(DEBT) as summaryDebt
+-- Выводим суммарную и среднюю задолженности для каждого банка
+select BANKS.BANKID, SUM(DEBT) as summaryDebt, AVG(DEBT) as averageDebt, COUNT(DEBT) as qttyDebt
 from BANKS join DEBTORS D on BANKS.BANKID = D.BANKID join LOANSUBJECTS L on D.LOANID = L.LOANID
 group by BANKS.BANKID;
+
+-- Инструкция SELECT, консолидирующая данные с помощью предложения group by и предложения having
+-- Выводим всё то же, что и выше, только для тех банков, у которых каунтер больше 3
+select BANKS.BANKID, SUM(DEBT) as summaryDebt, AVG(DEBT) as averageDebt, COUNT(DEBT) as qttyDebt
+from BANKS join DEBTORS D on BANKS.BANKID = D.BANKID join LOANSUBJECTS L on D.LOANID = L.LOANID
+group by BANKS.BANKID
+having COUNT(DEBT) > 3;
