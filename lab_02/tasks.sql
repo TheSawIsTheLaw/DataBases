@@ -235,3 +235,17 @@ where BANKID not in (
 -- Проверка. Запускается до исполнения и после.
 select count(BANKID)
 from BANKS;
+
+-- Инструкция select, использующая просто обобщённое табличное выражение
+-- Получаем среднюю задолженность банкам
+with banksAndMoney(BANKNAME, DEBTORSDEBTS)
+as (
+    select BANKS.NAME, SUM(DEBT)
+    from BANKS join DEBTORS D on BANKS.BANKID = D.BANKID join LOANSUBJECTS L on D.LOANID = L.LOANID
+    group by BANKS.NAME
+    )
+select AVG(DEBTORSDEBTS)
+from banksAndMoney;
+
+-- Инструкция select, спользующая рекурсивное обобщённое табличное выражение
+-- Будем выводить иерархию зависимости исполнителей от шефов
