@@ -165,3 +165,73 @@ select BANKS.BANKID, SUM(DEBT) as summaryDebt, AVG(DEBT) as averageDebt, COUNT(D
 from BANKS join DEBTORS D on BANKS.BANKID = D.BANKID join LOANSUBJECTS L on D.LOANID = L.LOANID
 group by BANKS.BANKID
 having COUNT(DEBT) > 3;
+
+-- Однострочная иснтрукция insert, выполняющая вставку в таблицу одной строки значений
+-- Добавим новый банк
+insert into BANKS (NAME, MAIL, TELEPHONE, LEGALADDRESS)
+values ('Smert', 'Smert@mail.org', '+96666666666', 'Ulitsa Pupkina, dom 4, Moscow, Serbia');
+
+-- Проверка
+select *
+from BANKS where NAME = 'Smert';
+
+-- Многострочная инструкция insert, выполняющая вставку в таблицу результирующего набора данных вложенного подзапроса
+-- У нас новый палач! Ему нужно выбрать шефа, у которого меньше 4 подчинённых
+insert into HANGMAN (POSITION, FIRSTNAME, LASTNAME, TELEPHONENUMBER, CHIEFID)
+select 'Executor', 'Алексей', 'Романов', '+79991112233', CHIEFID
+from (
+        select *
+        from (
+            select CHIEFID, COUNT(CHIEFID) as counter
+            from HANGMAN
+            group by CHIEFID)
+        where counter < 4
+         )z
+where ROWNUM=1;
+
+-- Проверка
+select *
+from HANGMAN
+where FIRSTNAME = 'Алексей';
+
+-- Простая инструкция update
+-- Алексей решил поменять себе фамилию. Поможем ему в этом!
+update HANGMAN
+set LASTNAME = 'Евдокимов'
+where HANGMANID = 1001;
+
+-- Проверка
+select *
+from HANGMAN
+where FIRSTNAME = 'Алексей';
+
+-- Инструкция update со скалярным подзапросом в предложении set
+-- АЛЯРМА!!! СМЫСЛА В ЭТОМ ЗАПРОСЕ НЕ БОЛЬШЕ, ЧЕМ В МОЁМ СУЩЕСТВОВАНИИ!!!
+-- А поменяем-ка мы для последнего элемента задолженности стоимость на среднюю стоимость по таблице)))))))
+update LOANSUBJECTS
+set PRICE = (
+    select AVG(PRICE)
+    from LOANSUBJECTS
+    )
+where LOANID = 1000;
+
+select *
+from LOANSUBJECTS
+where LOANID = 1000;
+
+-- Простая инструкция delete
+-- Удалим то непотребство, которое мы добавили в insert-запросе
+delete HANGMAN
+where HANGMANID = 1001;
+
+-- Инстукция delete  вложенным коррелированным подзапросов в предложении where
+-- Удалим банки, у которых нет "клиентов" для нашего обслуживания
+delete BANKS
+where BANKID not in (
+        select distinct BANKID
+        from DEBTORS
+    );
+
+-- Проверка. Запускается до исполнения и после.
+select count(BANKID)
+from BANKS;
