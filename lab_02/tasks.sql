@@ -42,7 +42,7 @@ where NOT EXISTS(
 -- Проверка
 select *
 from RELATIVES
-where DEBTORID = 579
+where DEBTORID = 579;
 
 -- Инструкция select, использующая предикат сравнения с квантором
 -- Все объекты долга, которые дешевле всех объектов долга, приобретённых в 2000 году
@@ -132,8 +132,10 @@ from tempTable;
 select HANGMAN.HANGMANID, FIRSTNAME, LASTNAME, TELEPHONENUMBER, summary
 from HANGMAN join (
         select HANGMANID, SUM(DEBT) as summary
-        from (select HANGMAN.HANGMANID, DEBT
-        from HANGMAN join DEBTORS D on HANGMAN.HANGMANID = D.HANGMANID join LOANSUBJECTS L on D.LOANID = L.LOANID)
+        from (
+            select HANGMAN.HANGMANID, DEBT
+            from HANGMAN join DEBTORS D on HANGMAN.HANGMANID = D.HANGMANID join LOANSUBJECTS L on D.LOANID = L.LOANID
+        )
         group by HANGMANID
     ) S on HANGMAN.HANGMANID = S.HANGMANID;
 
@@ -260,7 +262,7 @@ as (
     )
 select *
 from recurs
-where LVL = 2;
+where LVL = 0;
 
 -- Оконные функции. Использование конструкций MIN/MAX/AVG OVER()
 -- Выведем должников с минимальным и максимальным значением долга по банку. Ну ещё и среднее в придачу
@@ -298,3 +300,25 @@ from (
     from DEBTORS dF join DEBTORS dS on dF.FIRSTNAME = dS.FIRSTNAME join DEBTORS dT on dT.FIRSTNAME = dS.FIRSTNAME
          )
 where dFName = 'Amy' and cnt = 1;
+
+-- Исправление (?)
+create global temporary table tempTable (
+    DFNAME varchar(64),
+    DFTELEPHONE varchar(16) not null,
+    DSNAME varchar(64),
+    DSTELEPHONE varchar(16) not null,
+    CNT int
+) ON COMMIT DELETE rows;
+
+drop table tempTable;
+
+insert into tempTable (
+    select dF.FIRSTNAME as dFName, dF.TELEPHONENUM as dFTelephone, dS.FIRSTNAME as dSName, dS.TELEPHONENUM as dSTelephone, row_number() over (partition by dF.TELEPHONENUM order by dF.TELEPHONENUM) as cnt
+    from DEBTORS dF join DEBTORS dS on dF.FIRSTNAME = dS.FIRSTNAME join DEBTORS dT on dT.FIRSTNAME = dS.FIRSTNAME
+    );
+
+delete from tempTable
+where cnt <> 1;
+
+select *
+from tempTable
