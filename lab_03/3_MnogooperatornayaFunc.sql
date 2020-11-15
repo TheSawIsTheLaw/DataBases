@@ -15,15 +15,25 @@ drop type LoansLowerTableType;
 
 -- Функция, возвращающая фамилии всех должников, цена преобретённых
 -- предметов у которых ниже заданной.
-create or replace function getDebtorsWithLoanPriceInRange(startPrice in number, endPrice in number)
+create or replace function getDebtorsWithLoanPriceInRange(startPrice in number, endPrice in number, numberOfRecords in number)
 return LoansLowerTableType as retTable LoansLowerTableType;
+            ind number := 0;
     begin
-        select rowLoansPriceLower(D.LASTNAME, L.LOANID, L.SUBJECTNAME, L.PRICE)
-        bulk collect into retTable
-        from DEBTORS D join LOANSUBJECTS L on D.LOANID = L.LOANID
-        where PRICE < endPrice and PRICE > startPrice;
+        DBMS_OUTPUT.ENABLE(20000000);
+        while (ind < numberOfRecords)
+        loop
+            select rowLoansPriceLower(LASTNAME, D.LOANID, SUBJECTNAME, PRICE)
+            bulk collect into retTable
+            from DEBTORS D join LOANSUBJECTS L on L.LOANID = D.LOANID
+            where L.PRICE > startPrice and L.PRICE < endPrice and D.DEBTORID = ind;
+            ind := ind + 1;
+            end loop;
         return retTable;
     end;
 
 select *
-from getDebtorsWithLoanPriceInRange(60000, 100000);
+from getDebtorsWithLoanPriceInRange(0, 10000000000, 1001);
+
+select *
+from DEBTORS
+where DEBTORID = 1000;
