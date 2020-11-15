@@ -1,6 +1,4 @@
--- У должника может быть больше одного предмета задолженности
--- Так что надо подправить
-
+-- Должник внёс деньги по долгу. Ну что ж, уменьшаем его задолженность.
 create or replace procedure reduceDebt(debtor number, reduceValue number) as
 begin
     update LOANSUBJECTS set DEBT = DEBT - reduceValue
