@@ -23,16 +23,8 @@ return tableOfDebtorsWithDebtsMoreThanAverLessThanHalfOfMaxPlusMin as retTable t
             halfOfMaxDebt number := 0;
             minDebt number := 0;
     begin
-        select avg(DEBT)
-        into averDebt
-        from system.LOANSUBJECTS;
-
-        select max(DEBT) / 2
-        into halfOfMaxDebt
-        from system.LOANSUBJECTS;
-
-        select min(DEBT)
-        into minDebt
+        select avg(DEBT), max(DEBT) / 2, min(DEBT)
+        into averDebt, halfOfMaxDebt, minDebt
         from system.LOANSUBJECTS;
 
         select debtorsWithDebtsMoreThanAverLessThanHalfOfMaxPlusMin(LASTNAME, L.LOANID, SUBJECTNAME, DEBT)
