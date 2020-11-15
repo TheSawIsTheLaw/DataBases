@@ -13,8 +13,10 @@ create or replace type tableOfDebtorsWithDebtsMoreThanAverLessThanHalfOfMaxPlusM
 drop type debtorsWithDebtsMoreThanAverLessThanHalfOfMaxPlusMin;
 
 
--- Функция, возвращающая фамилии всех должников, цена преобретённых
--- предметов у которых ниже заданной.
+-- Функция, возвращающая фамилии всех должников, задолженность которых
+-- больше средней задолженности по всей таблице и меньше половины максимальной задолженности + минимальная задолженность
+
+-- Я хотел умереть
 create or replace function showTableOfDebtorsWithDebtsMoreThanAverLessThanHalfOfMaxPlusMin
 return tableOfDebtorsWithDebtsMoreThanAverLessThanHalfOfMaxPlusMin as retTable tableOfDebtorsWithDebtsMoreThanAverLessThanHalfOfMaxPlusMin;
             averDebt number := 0;
