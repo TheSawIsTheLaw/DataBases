@@ -1,39 +1,45 @@
 -- Ну да, описать тип возвращаемой таблицы внутри функции тоже нельзя.
 -- Поэтому мы будем делать предыдущий запрос, но в ином ключе. Класс.
 
-create or replace type rowLoansPriceLower is object(
+create or replace type debtorsWithDebtsMoreThanAverLessThanHalfOfMaxPlusMin is object(
     DEBTORLASTNAME varchar2(64),
     LOANID number,
     SUBJECTNAME varchar2(256),
-    PRICE number
+    DEBT number
 );
-drop type rowLoansPriceLower;
+drop type debtorsWithDebtsMoreThanAverLessThanHalfOfMaxPlusMin;
 
-create or replace type LoansLowerTableType is table of rowLoansPriceLower;
-drop type LoansLowerTableType;
+create or replace type tableOfDebtorsWithDebtsMoreThanAverLessThanHalfOfMaxPlusMin is table of debtorsWithDebtsMoreThanAverLessThanHalfOfMaxPlusMin;
+drop type debtorsWithDebtsMoreThanAverLessThanHalfOfMaxPlusMin;
 
 
 -- Функция, возвращающая фамилии всех должников, цена преобретённых
 -- предметов у которых ниже заданной.
-create or replace function getDebtorsWithLoanPriceInRange(startPrice in number, endPrice in number, numberOfRecords in number)
-return LoansLowerTableType as retTable LoansLowerTableType;
-            ind number := 0;
+create or replace function showTableOfDebtorsWithDebtsMoreThanAverLessThanHalfOfMaxPlusMin
+return tableOfDebtorsWithDebtsMoreThanAverLessThanHalfOfMaxPlusMin as retTable tableOfDebtorsWithDebtsMoreThanAverLessThanHalfOfMaxPlusMin;
+            averDebt number := 0;
+            halfOfMaxDebt number := 0;
+            minDebt number := 0;
     begin
-        DBMS_OUTPUT.ENABLE(20000000);
-        while (ind < numberOfRecords)
-        loop
-            select rowLoansPriceLower(LASTNAME, D.LOANID, SUBJECTNAME, PRICE)
-            bulk collect into retTable
-            from DEBTORS D join LOANSUBJECTS L on L.LOANID = D.LOANID
-            where L.PRICE > startPrice and L.PRICE < endPrice and D.DEBTORID = ind;
-            ind := ind + 1;
-            end loop;
+        select avg(DEBT)
+        into averDebt
+        from system.LOANSUBJECTS;
+
+        select max(DEBT) / 2
+        into halfOfMaxDebt
+        from system.LOANSUBJECTS;
+
+        select min(DEBT)
+        into minDebt
+        from system.LOANSUBJECTS;
+
+        select debtorsWithDebtsMoreThanAverLessThanHalfOfMaxPlusMin(LASTNAME, L.LOANID, SUBJECTNAME, DEBT)
+        bulk collect into retTable
+        from DEBTORS D join LOANSUBJECTS L on D.LOANID = L.LOANID
+        where DEBT > averDebt and DEBT < halfOfMaxDebt + minDebt;
+
         return retTable;
     end;
 
 select *
-from getDebtorsWithLoanPriceInRange(0, 10000000000, 1001);
-
-select *
-from DEBTORS
-where DEBTORID = 1000;
+from showTableOfDebtorsWithDebtsMoreThanAverLessThanHalfOfMaxPlusMin();
