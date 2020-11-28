@@ -5,4 +5,3 @@ as
 
 select FIRSTNAME, LASTNAME, DEBT, debtorStatus(DEBT)
 from DEBTORS D join LOANSUBJECTS L on D.LOANID = L.LOANID;
-
