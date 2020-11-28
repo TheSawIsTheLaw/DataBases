@@ -31,7 +31,7 @@ select * from infoAboutLoans
     where LOANID = 1;
 
 update infoAboutLoans
-set SUBJECTNAME = 'amarok'
+set SUBJECTNAME = 'ololo'
 where LOANID = 1;
 
 select *

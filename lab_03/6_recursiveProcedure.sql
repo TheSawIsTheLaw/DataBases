@@ -49,12 +49,12 @@
 -- Нужно, так как иначе таблица будет пересобираться каждый раз. Это плохо, она может поменяться
 -- и мы два раза отправим одного и того же чифа на проверку для записи
 
--- create or replace type newChiefsRow is object(
---    COUNTER number,
---    HANGID number
---                                             );
+create or replace type newChiefsRow is object(
+   COUNTER number,
+   HANGID number
+                                            );
 
--- create or replace type newChiefsTable is table of newChiefsRow;
+create or replace type newChiefsTable is table of newChiefsRow;
 
 -- UPD: окей, я пытался. Он не видит эту таблицу внутри процедуры. Ну да, ну да, пошёл я к чертям собачьим.
 
@@ -103,7 +103,7 @@ begin
 end;
 
 begin
-    addTraineeToFreeHangman('Pavel', 'Pepperoni', '86666666666', 1);
+    addTraineeToFreeHangman('Pavel', 'Pepperoni', '86666666666', 5);
 end;
 
 select *

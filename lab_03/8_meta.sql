@@ -13,7 +13,7 @@ begin
     select count(*)
     into doesExists
     from USER_TABLES
-    where TABLE_NAME = tableName;
+    where TABLE_NAME = upper(tableName);
 
     if doesExists > 0 then
         execute immediate 'DROP TABLE ' || tableName;
@@ -21,7 +21,7 @@ begin
 end;
 
 begin
-    dropTableIfExist('TEMPTABLE');
+    dropTableIfExist('temptable');
 end;
 
 create table temptable(
