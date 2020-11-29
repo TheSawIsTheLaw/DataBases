@@ -78,10 +78,10 @@ public class Facade
     }
 
     // Табличная функция
-    static public ARRAY biggerThenAveragePlus(int plusing)
+    // Выводим все предметы задолженности с долгом в среднее + некоторое переданное значение
+    static public ARRAY biggerThenAveragePlus(int plusing) throws SQLException
     {
         String req = "select avg(debt) from LOANSUBJECTS";
-        int rows = 0;
 
         try
         {
@@ -96,6 +96,7 @@ public class Facade
             result.close();
             statement.close();
 
+            // Получаем количество итоговых записей
             req = "select count(*) from LOANSUBJECTS where DEBT > " + Float.toString(aver + plusing);
             statement = connection.prepareStatement(req);
             result = statement.executeQuery();
@@ -104,6 +105,7 @@ public class Facade
             result.close();
             statement.close();
 
+            // ¯\_(ツ)_/¯
             req = "select SUBJECTNAME, DEBT from LOANSUBJECTS where DEBT > " + Float.toString(aver + plusing);
             statement = connection.prepareStatement(req);
             result = statement.executeQuery();
@@ -129,13 +131,34 @@ public class Facade
         }
         catch (SQLException error)
         {
-            System.out.println("Srazy Jopa");
             System.err.print(error.getMessage());
             System.err.print(error.getSQLState());
             System.err.print(error.getLocalizedMessage());
             error.printStackTrace();
 
             return null;
+        }
+    }
+
+    // Нам принесли деняк. Мы довольные. Мы уменьшать долг.
+    static public void reduceDebtWithJava(int debtorID, int reduceValue) throws SQLException
+    {
+        String req = "update LOANSUBJECTS set DEBT = DEBT - " + reduceValue + " where LOANID = (select LOANID from DEBTORS D where D.DEBTORID = " + debtorID + " )";
+        try
+        {
+            System.out.print("ZAEBALO!!!!!");
+            Connection connection = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "ninanina1");
+            PreparedStatement statement = connection.prepareStatement(req);
+
+            statement.executeUpdate();
+            statement.close();
+        }
+        catch (SQLException error)
+        {
+            System.err.print(error.getMessage());
+            System.err.print(error.getSQLState());
+            System.err.print(error.getLocalizedMessage());
+            error.printStackTrace();
         }
     }
 }
