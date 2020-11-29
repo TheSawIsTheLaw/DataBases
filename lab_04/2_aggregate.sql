@@ -7,3 +7,8 @@ call DBMS_JAVA.set_output(2000);
 
 -- select customMax('LOANSUBJECTS', 'DEBT') from LOANSUBJECTS;
 call DBMS_OUTPUT.PUT_LINE(customMax('LOANSUBJECTS', 'DEBT'));
+
+select * from LOANSUBJECTS;
+
+
+

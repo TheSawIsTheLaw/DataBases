@@ -22,23 +22,15 @@ public class Facade
 
     public static int customMax(String tableName, String columnName) throws SQLException
     {
-        String req = "select ? from ?"; // ? - маркер параметра
-
-        System.out.println("Fuck");
+        String req = "select " + columnName + " from " + tableName;
 
         int max = -1;
         try
         {
-            Connection connection = DriverManager.getConnection("jdbc:default:connection:");
+            Connection connection = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "ninanina1");
             PreparedStatement statement = connection.prepareStatement(req);
-            statement.setString(1, tableName.toUpperCase());
-            statement.setString(2, columnName.toUpperCase());
-
-
 
             ResultSet result = statement.executeQuery();
-
-            max = 1;
 
             while (result.next())
             {
@@ -56,6 +48,9 @@ public class Facade
         catch (SQLException error)
         {
             System.err.print(error.getMessage());
+            System.err.print(error.getSQLState());
+            System.err.print(error.getLocalizedMessage());
+            error.printStackTrace();
         }
         return max;
     }
