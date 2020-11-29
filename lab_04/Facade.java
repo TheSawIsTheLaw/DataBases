@@ -141,6 +141,7 @@ public class Facade
     }
 
     // Нам принесли деняк. Мы довольные. Мы уменьшать долг.
+    // Хранимая процедура
     static public void reduceDebtWithJava(int debtorID, int reduceValue) throws SQLException
     {
         String req = "update LOANSUBJECTS set DEBT = DEBT - " + reduceValue + " where LOANID = (select LOANID from DEBTORS D where D.DEBTORID = " + debtorID + " )";
@@ -161,6 +162,7 @@ public class Facade
         }
     }
 
+    // Триггер
     static public void insertChiefJava(int newLoanID, String newSubjectName, int newDebt, String newPurchaseDate, int newPrice) throws SQLException
     {
         if (newDebt <= 1000000)
@@ -182,6 +184,40 @@ public class Facade
             System.err.print(error.getSQLState());
             System.err.print(error.getLocalizedMessage());
             error.printStackTrace();
+        }
+    }
+
+    // Возвращаем пользовательский тип данных :cool:
+    static public STRUCT getPhoneBookRecord(int debtorID) throws SQLException
+    {
+        String req = "select FIRSTNAME, LASTNAME, TELEPHONENUM, DEBT from DEBTORS D join LOANSUBJECTS L on D.LOANID = L.LOANID where DEBTORID = " + debtorID;
+
+        Object retObject[] = new Object[4];
+        try
+        {
+            Connection connection = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "ninanina1");
+            PreparedStatement statement = connection.prepareStatement(req);
+
+            ResultSet result = statement.executeQuery();
+
+            if (result.next())
+            {
+                retObject[0] = result.getString(1);
+                retObject[1] = result.getString(2);
+                retObject[2] = result.getString(3);
+                retObject[3] = result.getInt(4);
+            }
+            StructDescriptor descriptor = StructDescriptor.createDescriptor("PHONEBOOKRECORD", connection);
+
+            return new STRUCT(descriptor, connection, retObject);
+        }
+        catch (SQLException error)
+        {
+            System.err.print(error.getMessage());
+            System.err.print(error.getSQLState());
+            System.err.print(error.getLocalizedMessage());
+            error.printStackTrace();
+            return null;
         }
     }
 }
