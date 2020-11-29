@@ -146,7 +146,30 @@ public class Facade
         String req = "update LOANSUBJECTS set DEBT = DEBT - " + reduceValue + " where LOANID = (select LOANID from DEBTORS D where D.DEBTORID = " + debtorID + " )";
         try
         {
-            System.out.print("ZAEBALO!!!!!");
+            Connection connection = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "ninanina1");
+            PreparedStatement statement = connection.prepareStatement(req);
+
+            statement.executeUpdate();
+            statement.close();
+        }
+        catch (SQLException error)
+        {
+            System.err.print(error.getMessage());
+            System.err.print(error.getSQLState());
+            System.err.print(error.getLocalizedMessage());
+            error.printStackTrace();
+        }
+    }
+
+    static public void insertChiefJava(int newLoanID, String newSubjectName, int newDebt, String newPurchaseDate, int newPrice) throws SQLException
+    {
+        if (newDebt <= 1000000)
+            return;
+
+        String req = "insert into FOROURCHIEF (loanid, subjectname, debt, purchasedate, price) values (" + newLoanID +", '" + newSubjectName +
+                "', " + newDebt + ", '" + newPurchaseDate + "', " + newPrice + ")";
+        try
+        {
             Connection connection = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "ninanina1");
             PreparedStatement statement = connection.prepareStatement(req);
 
