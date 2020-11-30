@@ -11,7 +11,7 @@ begin
 end;
 create table LOANSJSON
 (
-    JSONString clob constraint ensure_json check (JSONString is JSON)
+    JSONString clob check (JSONString is JSON)
 );
 select * from LOANSJSON;
 
