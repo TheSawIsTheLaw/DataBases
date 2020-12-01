@@ -22,6 +22,7 @@ declare
     resultString varchar2 (6666);
     currentJson JSON_OBJECT_T;
 
+    -- Ну вот потому что не нравится ему в плскл доставать что-то из битлджуса
     curLoanID number;
     curSubjName varchar2(256);
     curDebt number;

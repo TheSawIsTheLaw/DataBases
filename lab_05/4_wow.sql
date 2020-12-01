@@ -1,14 +1,39 @@
 -- 1) Извлекаем фрагмент из JSON
 -- Старая песня. Хотим видеть имена, фамилии, а также битлджус с ID < 100
+-- Предистория
 select DEBTORID, FIRSTNAME, LASTNAME, DL.JSONLOAN
 from DEBTORSWITHLOANS DL
 where DEBTORID < 100;
 
+-- Тут я покажу, что умею обращаться со CLOB, в дальнейшем уже пойдёт просто работа с табличным JSON
+declare
+    fragment clob;
+begin
+    select DL.JSONLOAN
+    into fragment
+    from DEBTORSWITHLOANS DL
+    where DEBTORID = 555;
+    DBMS_OUTPUT.PUT_LINE(fragment);
+end;
+
 -- 2) Извлекаем значения конкретных узлов или атрибутов.
 -- Вынимаем их битлджуса нужные значения
+-- Предистория
 select DEBTORID, FIRSTNAME, LASTNAME, DL.JSONLOAN.SUBJECTNAME, DL.JSONLOAN.DEBT
 from DEBTORSWITHLOANS DL
 where DEBTORID < 100;
+
+declare
+    attributeSubjName clob;
+    attributeDebt clob;
+begin
+    select DL.JSONLOAN.SUBJECTNAME, DL.JSONLOAN.DEBT
+    into attributeSubjName, attributeDebt
+    from DEBTORSWITHLOANS DL
+    where DEBTORID = 555;
+    DBMS_OUTPUT.PUT_LINE(attributeSubjName);
+    DBMS_OUTPUT.PUT_LINE(attributeDebt);
+end;
 
 -- 3) Выполнить проверку существования узла или атрибута
 -- Сначала я написал вот это чудо
@@ -95,6 +120,7 @@ create global temporary table IHATEORACLE
 drop table IHATEORACLE;
 
 -- Когда это заработало я чуть не сломал себе левую ногу. Потрясающе.
+select * from IHATEORACLE;
 select I.fcol.DEBT from IHATEORACLE I;
 
 insert into IHATEORACLE
