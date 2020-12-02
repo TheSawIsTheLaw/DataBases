@@ -14,3 +14,7 @@ where D.DEBTORID = 85;
 begin
 reduceDebt(85, 100);
 end;
+
+select * from dba_waiters;
+
+call cast(CURRENT_TIMESTAMP as VARCHAR2(64))
