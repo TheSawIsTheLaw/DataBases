@@ -53,7 +53,7 @@ begin
             exception when No_data_found then exit;
         end;
     end loop;
-utl_file.FCLOSE(currentFile);
+    utl_file.FCLOSE(currentFile);
 end;
 
 select * from newLoans;

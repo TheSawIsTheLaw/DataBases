@@ -85,6 +85,9 @@ fun getAnswerAndInvoke(funcs: Array<KFunction0<Unit>>) : Boolean
 
     funcs[gotCall - 1].call()
 
+    input.nextLine()
+    input.nextLine()
+
     return true
 }
 
@@ -105,7 +108,7 @@ fun scalarQuery() {
         val result = statement.executeQuery();
 
         result.next()
-        println("Result: ${result.getInt(1)}")
+        println("Result: ${result.getFloat(1)}")
     } catch (err: SQLException)
     {
         println("YA UPAL :(")

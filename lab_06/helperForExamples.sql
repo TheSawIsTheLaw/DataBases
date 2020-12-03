@@ -7,3 +7,5 @@ create table BankEmployees
     foreign key (BankID) references BANKS(BankID)
 );
 drop table BankEmployees;
+
+select AVG(DEBT) from LOANSUBJECTS;

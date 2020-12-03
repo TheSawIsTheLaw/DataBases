@@ -14,7 +14,6 @@ return averResTable
 as
     language java name 'Facade.biggerThenAveragePlus(int) return oracle.sql.ARRAY.ARRAY';
 
-select * from TABLE(
-    biggerThenAveragePlus(0));
+select * from TABLE(biggerThenAveragePlus(0));
 
 select * from LOANSUBJECTS where DEBT > all( select avg(debt) from LOANSUBJECTS);

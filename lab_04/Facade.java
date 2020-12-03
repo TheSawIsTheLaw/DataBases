@@ -22,7 +22,7 @@ public class Facade
         return status;
     }
 
-    // Никому не нужное оно
+    // Как бы агрегирующая, но не агрегирующая функция
     public static int customMax(String tableName, String columnName) throws SQLException
     {
         String req = "select " + columnName + " from " + tableName;
