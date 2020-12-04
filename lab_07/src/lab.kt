@@ -1,6 +1,9 @@
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+
 class LoanSubject(var loanID: Int, var subjectName: String?,
-                    var debt: Int, var purchaseDate: String,
-                    var price: Int)
+                  var debt: Int, var purchaseDate: String,
+                  var price: Int)
 {
     override fun toString(): String {
         return "|Loan: id = $loanID | name = $subjectName | " +
@@ -17,7 +20,7 @@ const val ANSI_PURPLE = "\u001B[35m"
 const val ANSI_CYAN = "\u001B[36m"
 const val ANSI_WHITE = "\u001B[37m"
 
-fun LINQToObject(loans: List<LoanSubject>)
+fun LINQToObject(loans: MutableList<LoanSubject>)
 {
     println(ANSI_BLUE + "Полный селект!" + ANSI_RESET)
     loans.forEach { println("\u001B[33m[31m$it\u001B[0m") }
@@ -49,10 +52,35 @@ fun LINQToObject(loans: List<LoanSubject>)
     println()
 }
 
+fun LINQToJSON(loans: MutableList<LoanSubject>)
+{
+    println(ANSI_PURPLE + "Вот тут я сейчас превращу рабочую табличку в json строку" + ANSI_RESET)
+    val jsonString = Gson().toJson(loans)
+    println(ANSI_YELLOW + jsonString + ANSI_RESET)
+
+    println("\n" + ANSI_PURPLE + "Теперь 1) Чтение из JSON документа. Прочитаем " + ANSI_RESET)
+    val gotJson = Gson().fromJson(jsonString, Array<LoanSubject>::class.java).toMutableList() // Ha-ha, magic.
+    print(ANSI_YELLOW)
+    gotJson.forEach { println(it.toString()) }
+    print(ANSI_RESET)
+
+    println("\n" + ANSI_PURPLE + "Теперь 2) Обновление JSON документа. Мы прочитали Аррейку. Теперь можем её изменить и создать новый JSON\n Поменяем имя первого долга с amarok на golf " + ANSI_RESET)
+    gotJson[0].subjectName = "golf"
+    println(ANSI_PURPLE + "И итоговый JSON будет:" + ANSI_RESET)
+    println(ANSI_YELLOW + Gson().toJson(gotJson) + ANSI_RESET)
+
+    println("\n" + ANSI_PURPLE + "Теперь 3) Добавление в JSON документ. Добавим новый объект долга!" + ANSI_RESET)
+    gotJson.add(LoanSubject(21, "granta", 666666, "2010-01-01", 1000000))
+    println("\n" + ANSI_PURPLE + "Вуаля! Ещё и вывести красиво можно" + ANSI_RESET)
+    print(ANSI_YELLOW)
+    Gson().toJson(gotJson).forEach { if (it == '{' || it == ',') print("$it\n   ") else if (it == '}') print("\n   $it") else print(it)}
+    print(ANSI_RESET)
+}
+
 fun main()
 {
-    val loans: List<LoanSubject> by lazy {
-        listOf(
+    val loans: MutableList<LoanSubject> by lazy {
+        mutableListOf(
             LoanSubject(1,"amarok",484176,"2004-11-18", 5365240),
             LoanSubject(2,"collection",783176,"2002-01-28",788508),
             LoanSubject(3,"paper",816895,"2014-10-01",9681245),
@@ -76,5 +104,6 @@ fun main()
     }
 
     LINQToObject(loans)
+    LINQToJSON(loans)
 
 }
