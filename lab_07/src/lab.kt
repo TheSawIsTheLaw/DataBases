@@ -1,4 +1,9 @@
 import com.google.gson.Gson
+import me.liuwj.ktorm.database.Database
+import me.liuwj.ktorm.dsl.forEach
+import me.liuwj.ktorm.dsl.from
+import me.liuwj.ktorm.dsl.select
+import me.liuwj.ktorm.schema.*
 
 import net.servicestack.func.Func.join
 import net.servicestack.func.Func.union
@@ -25,6 +30,28 @@ class Debtor(var debtorID: Int, var firstName: String,
                 "passNum = $passportNum | homeAddr = $homeAddress | " +
                 "loanID = $loanID"
     }
+}
+
+object LOANSUBJECTS : Table<Nothing>("LOANSUBJECTS")
+{
+    var loanID = int("loanid").primaryKey()
+    var subjectName = varchar("subjectname")
+    var debt = int("debt")
+    var purchaseDate = varchar("purchasedate")
+    var price = int("price")
+}
+
+object DEBTORS : Table<Nothing>("DEBTORS")
+{
+    var debtorID = int("debtorid").primaryKey()
+    var firstname = varchar("firstname")
+    var lastname = varchar("lastname")
+    var telephoneNum = varchar("telephonenum")
+    var passportNum = varchar("passportNum")
+    var homeAddress = varchar("homeaddress")
+    var loanID = int("loanid")
+    var bankID = int("bankid")
+    var hangmanID = int("hangmanid")
 }
 
 const val ANSI_RESET = "\u001B[0m"
@@ -97,37 +124,45 @@ fun LINQToJSON(loans: MutableList<LoanSubject>)
 
 fun LINQToSQL(loans: MutableList<LoanSubject>, debtors: MutableList<Debtor>)
 {
-    println("\n\n" + ANSI_CYAN + "1) Селектим всех должников с номерами телефона, включающих в себя 85, а потом выводим всех их отсортированными по имени" + ANSI_RESET)
-    val joinable = debtors.filter { it.telephoneNum!!.contains("85") }.sortedBy { it.firstName }
-    print(ANSI_YELLOW)
-    joinable.forEach { println(it.toString()) }
-    print(ANSI_RESET)
+    // А потом оказалось, что я делал не то :)
+//    println("\n\n" + ANSI_CYAN + "1) Селектим всех должников с номерами телефона, включающих в себя 85, а потом выводим всех их отсортированными по имени" + ANSI_RESET)
+//    val joinable = debtors.filter { it.telephoneNum!!.contains("85") }.sortedBy { it.firstName }
+//    print(ANSI_YELLOW)
+//    joinable.forEach { println(it.toString()) }
+//    print(ANSI_RESET)
+//
+//    println("\n" + ANSI_CYAN + "2) Джойн :) Заджойним то чудо, которое получили в предыдущем " +
+//            "запросе к таблице loans и выведем их айдишники, имена и задолженности. В " +
+//            "отсортированном виде, офкорс\n Полученный join:" + ANSI_RESET)
+//    print(ANSI_YELLOW)
+//    val joinResult = join(loans, joinable) { l, j -> l.loanID == j.loanID}
+//            .sortedBy { it.B.firstName }
+//            .map { listOf(it.B.debtorID, it.A.loanID, it.B.firstName, it.B.lastName, it.A.debt) }
+//    joinResult.forEach { println(it.toString()) }
+//    print(ANSI_RESET)
+//
+//    println("\n" + ANSI_CYAN + "Также мне хотелось бы показать, как тут работают агрегатные функции. Выведем сумму по задолженностям людей, выведенных выше")
+//    val sum = join(loans, joinable) { l, j -> l.loanID == j.loanID }.sumBy { it.A.debt }
+//    println(ANSI_YELLOW + sum + ANSI_RESET)
+//
+//    println("\n" + ANSI_CYAN + "И средний долг всех людей с именами, начинающимися на L")
+//    val joinDL = join(loans, debtors) { l, d -> l.loanID == d.loanID }
+//            .filter { it.B.firstName[0] == 'L' }
+//    // Ваще невероятная магия и костыли
+//    val avg = joinDL.map { it.A.debt }.average()
+//    println("Таблица, по которой это считалось и значение, собственно: $ANSI_RESET")
+//    print(ANSI_YELLOW)
+//    joinDL.forEach { println(it) }
+//    println("AVG: $avg$ANSI_RESET")
 
-    println("\n" + ANSI_CYAN + "2) Джойн :) Заджойним то чудо, которое получили в предыдущем " +
-            "запросе к таблице loans и выведем их айдишники, имена и задолженности. В " +
-            "отсортированном виде, офкорс\n Полученный join:" + ANSI_RESET)
-    print(ANSI_YELLOW)
-    val joinResult = join(loans, joinable) { l, j -> l.loanID == j.loanID}
-            .sortedBy { it.B.firstName }
-            .map { listOf(it.B.debtorID, it.A.loanID, it.B.firstName, it.B.lastName, it.A.debt) }
-    joinResult.forEach { println(it.toString()) }
-    print(ANSI_RESET)
-
-    println("\n" + ANSI_CYAN + "Также мне хотелось бы показать, как тут работают агрегатные функции. Выведем сумму по задолженностям людей, выведенных выше")
-    val sum = join(loans, joinable) { l, j -> l.loanID == j.loanID }.sumBy { it.A.debt }
-    println(ANSI_YELLOW + sum + ANSI_RESET)
-
-    println("\n" + ANSI_CYAN + "И средний долг всех людей с именами, начинающимися на L")
-    val joinDL = join(loans, debtors) { l, d -> l.loanID == d.loanID }
-            .filter { it.B.firstName[0] == 'L' }
-    // Ваще невероятная магия и костыли
-    val avg = joinDL.map { it.A.debt }.average()
-    println("Таблица, по которой это считалось и значение, собственно: $ANSI_RESET")
-    print(ANSI_YELLOW)
-    joinDL.forEach { println(it) }
-    println("AVG: $avg$ANSI_RESET")
+    val database = Database.connect("jdbc:oracle:thin:@localhost:1521:XE", "oracle.jdbc.driver.OracleDriver", "system", "ninanina1")
+    database
+            .from(LOANSUBJECTS)
+            .select(LOANSUBJECTS.subjectName)
+            .forEach { println(it.getString(1))}
 
 }
+
 
 fun main()
 {
