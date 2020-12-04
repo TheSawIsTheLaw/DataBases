@@ -1,5 +1,7 @@
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+
+import net.servicestack.func.Func.join
+import net.servicestack.func.Func.union
 
 class LoanSubject(var loanID: Int, var subjectName: String?,
                   var debt: Int, var purchaseDate: String,
@@ -9,6 +11,19 @@ class LoanSubject(var loanID: Int, var subjectName: String?,
         return "|Loan: id = $loanID | name = $subjectName | " +
                 "debt = $debt | purchaseDate = $purchaseDate | " +
                 "price = $price|"
+    }
+}
+
+class Debtor(var debtorID: Int, var firstName: String,
+             var lastName: String, var telephoneNum: String?,
+             var passportNum: String?, var homeAddress: String?,
+             var loanID: Int)
+{
+    override fun toString(): String {
+        return "|debtor: id = $debtorID | fName = $firstName | " +
+                "lName = $lastName | telNum = $telephoneNum | " +
+                "passNum = $passportNum | homeAddr = $homeAddress | " +
+                "loanID = $loanID"
     }
 }
 
@@ -30,6 +45,9 @@ fun LINQToObject(loans: MutableList<LoanSubject>)
 
     println("\n" + ANSI_BLUE + "Вот тут пример where < 500000" + ANSI_RESET)
     println((loans.filter { it.debt < 500000 }).forEach{ println("\u001B[33m[31m$it\u001B[0m") })
+
+    println("\n" + ANSI_BLUE + "Вот тут пример groupBy группируем по первым буковкам в именах" + ANSI_RESET)
+    loans.groupBy { it.subjectName!![0] }.map { Pair(it.key, it) }.forEach { println(it) }
 
     println("\n" + ANSI_BLUE + "Вот тут вот пример использования having с приколом в стиле лямбда в лямбда))))))" + ANSI_RESET)
     val getAvgLess500000 : () -> Float = {
@@ -77,6 +95,40 @@ fun LINQToJSON(loans: MutableList<LoanSubject>)
     print(ANSI_RESET)
 }
 
+fun LINQToSQL(loans: MutableList<LoanSubject>, debtors: MutableList<Debtor>)
+{
+    println("\n\n" + ANSI_CYAN + "1) Селектим всех должников с номерами телефона, включающих в себя 85, а потом выводим всех их отсортированными по имени" + ANSI_RESET)
+    val joinable = debtors.filter { it.telephoneNum!!.contains("85") }.sortedBy { it.firstName }
+    print(ANSI_YELLOW)
+    joinable.forEach { println(it.toString()) }
+    print(ANSI_RESET)
+
+    println("\n" + ANSI_CYAN + "2) Джойн :) Заджойним то чудо, которое получили в предыдущем " +
+            "запросе к таблице loans и выведем их айдишники, имена и задолженности. В " +
+            "отсортированном виде, офкорс\n Полученный join:" + ANSI_RESET)
+    print(ANSI_YELLOW)
+    val joinResult = join(loans, joinable) { l, j -> l.loanID == j.loanID}
+            .sortedBy { it.B.firstName }
+            .map { listOf(it.B.debtorID, it.A.loanID, it.B.firstName, it.B.lastName, it.A.debt) }
+    joinResult.forEach { println(it.toString()) }
+    print(ANSI_RESET)
+
+    println("\n" + ANSI_CYAN + "Также мне хотелось бы показать, как тут работают агрегатные функции. Выведем сумму по задолженностям людей, выведенных выше")
+    val sum = join(loans, joinable) { l, j -> l.loanID == j.loanID }.sumBy { it.A.debt }
+    println(ANSI_YELLOW + sum + ANSI_RESET)
+
+    println("\n" + ANSI_CYAN + "И средний долг всех людей с именами, начинающимися на L")
+    val joinDL = join(loans, debtors) { l, d -> l.loanID == d.loanID }
+            .filter { it.B.firstName[0] == 'L' }
+    // Ваще невероятная магия и костыли
+    val avg = joinDL.map { it.A.debt }.average()
+    println("Таблица, по которой это считалось и значение, собственно: $ANSI_RESET")
+    print(ANSI_YELLOW)
+    joinDL.forEach { println(it) }
+    println("AVG: $avg$ANSI_RESET")
+
+}
+
 fun main()
 {
     val loans: MutableList<LoanSubject> by lazy {
@@ -105,5 +157,31 @@ fun main()
 
     LINQToObject(loans)
     LINQToJSON(loans)
+
+    val debtors: MutableList<Debtor> by lazy {
+        mutableListOf(
+                Debtor(85,"Richard","Cross",  "86680980492","4299013226","66821 George Bypass West Rebecca, ID 71770",1),
+                Debtor(86,"Karen","Moyer",    "85510782232","1294105691","85211 Ramos Green Wallsberg, NH 03070",2),
+                Debtor(87,"Ryan","Johnson",   "81720444351","5131840919","0142 Joshua Haven Suite 163 West Brianmouth, IA 59119",3),
+                Debtor(88,"Anthony","Oneal",  "84588565378","1390790809","Unit 0854 Box 7284 DPO AE 35360",4),
+                Debtor(89,"Brittany","Green", "82029475269","8514585441","8912 Graham Radial Suite 884 West Peter, NV 37469",5),
+                Debtor(90,"Patrick","Jones",  "82781507224","3204727089","55727 Little Walk Suite 683 South Ericburgh, FL 10056",6),
+                Debtor(91,"Danny","Evans",    "86485781327","9098584261","76657 Megan Roads Apt. 403 Colonfurt, AR 42357",7),
+                Debtor(92,"Hector","Jones",   "83319242634","6680754331","452 Sanchez Station Suite 155 New Rebeccabury, IL 69254",8),
+                Debtor(93,"Lauren","Simpson", "86696521238","9885482839","5829 Matthew Center Suite 580 Paulstad, KY 48026",9),
+                Debtor(94,"Michael","Johnson","85665349603","7870618004","8356 Jerry Village Apt. 861 Dixonberg, VT 20899",10),
+                Debtor(95,"Susan","Ray",      "85557414181","7522614227","USS Morales FPO AP 24225",11),
+                Debtor(96,"Julie","Gilbert",  "88913132053","3268201231","66439 Nelson Crest North Loganberg, MN 91387",12),
+                Debtor(97,"Ronald","Simon",   "80721076205","4433171666","13304 Jose Locks Apt. 366 Harperstad, MD 33442",13),
+                Debtor(98,"Cindy","Guerrero", "87391598093","9763215441","PSC 1374, Box 9802 APO AE 27792",14),
+                Debtor(99,"Melissa","Salazar","86152827556","2634234545","11789 Sandra Circle Lake Michelleview, NC 96601",15),
+                Debtor(100,"Earl","Mcmillan", "87680109045","1116950443","93603 Eric Port Suite 052 Ashleyshire, LA 74932",16),
+                Debtor(101,"Lisa","Aguilar",  "86028027897","5529715326","87372 Myers Avenue East Matthewville, ND 18865",17),
+                Debtor(102,"Kathy","Atkinson","88761896358","1284216076","84498 Schwartz Loaf Suite 067 South Katherineshire, MT 87099",18),
+                Debtor(103,"Patricia","Park", "88610111172","4575140273","66203 Palmer Port Suite 225 North Bryanmouth, KY 52046",19),
+                Debtor(104,"Linda","Hughes",  "88691428150","4785587154","3699 Cross Forges Port Markberg, NY 05630",20))
+    }
+
+    LINQToSQL(loans, debtors)
 
 }
