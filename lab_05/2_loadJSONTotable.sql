@@ -14,7 +14,7 @@ create global temporary table newLoans
     Price INTEGER NOT NULL
 ) on commit delete rows;
 
-select * from LOANSUBJECTS;
+select * from newLoans;
 
 declare
     currentFile UTL_FILE.file_type;

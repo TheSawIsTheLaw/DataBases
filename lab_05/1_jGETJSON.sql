@@ -1,7 +1,7 @@
 -- Выгружаем битлджуса из таблички
 -- Создадим некое подобие телефонной книги
 
--- select JSON_OBJECT('FName' is FIRSTNAME, 'SName' is LASTNAME, 'Telephone' is TELEPHONENUM) from DEBTORS;
+select JSON_OBJECT('FName' is FIRSTNAME, 'SName' is LASTNAME, 'Telephone' is TELEPHONENUM) from DEBTORS;
 
 -- Также можно дампнуть через поле Services, либо использовать Execute to File по правой кнопке мыши
 select FIRSTNAME, LASTNAME, TELEPHONENUM from DEBTORS;

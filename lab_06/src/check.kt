@@ -194,10 +194,10 @@ fun metaQuery()
         val connection =
             DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "system", "ninanina1")
         val sql = "select OWNER, TABLE_NAME from ALL_TABLES where OWNER = 'SYSTEM'"
-        println("Query: $sql");
+        println("Query: $sql")
 
         val statement = connection.prepareStatement(sql)
-        val result = statement.executeQuery();
+        val result = statement.executeQuery()
 
         while(result.next())
             println("ResultString: Owner:${result.getString(1)} Table name:${result.getString(2)}")

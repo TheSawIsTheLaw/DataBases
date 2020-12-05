@@ -9,7 +9,7 @@ call DBMS_JAVA.set_output(2000);
 -- select customMax('LOANSUBJECTS', 'DEBT') from LOANSUBJECTS;
 call DBMS_OUTPUT.PUT_LINE(customMax('LOANSUBJECTS', 'DEBT'));
 
-select * from LOANSUBJECTS;
+select max(DEBT) from LOANSUBJECTS;
 
 -- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 -- @@@@@@@@@@@@@@@@@@@@@@@@    *     @@@@@@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -67,21 +67,21 @@ PACKAGE JAggrFunPackage authid current_user AS
 END JAggrFunPackage;
 
 CREATE OR REPLACE
-TYPE JAggrFunPackageType authid current_user AS OBJECT
+TYPE JAggrFunPackageType AS OBJECT
   (
    jctx NUMBER, -- stored context;  not used in dummy implementation
    STATIC FUNCTION
-        ODCIAggregateInitialize(sctx IN OUT NOCOPY JAggrFunPackageType )
+        ODCIAggregateInitialize(sctx IN OUT JAggrFunPackageType )
         RETURN NUMBER,
 
    MEMBER FUNCTION
-        ODCIAggregateIterate(self IN OUT NOCOPY JAggrFunPackageType,
+        ODCIAggregateIterate(self IN OUT JAggrFunPackageType,
                              VALUE IN VARCHAR2 )
         RETURN NUMBER,
 
    MEMBER FUNCTION
         ODCIAggregateTerminate(self IN JAggrFunPackageType,
-                               returnValue OUT NOCOPY VARCHAR2,
+                               returnValue OUT VARCHAR2,
                                flags IN NUMBER)
         RETURN NUMBER,
 
@@ -140,7 +140,7 @@ type body JAggrFunPackageType  is
 end;
 
 CREATE OR REPLACE
-FUNCTION JAggr(input VARCHAR2 )
+FUNCTION JAggr(input VARCHAR2)
 RETURN VARCHAR2
 AGGREGATE USING JAggrFunPackageType;
 

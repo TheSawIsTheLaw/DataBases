@@ -72,7 +72,7 @@ end;
 -- Он ещё так прикольно исключениями кидается, если таблицы не существует. Решил это не исправлять, чтобы неповадно было что попало передавать.
 -- А так, можно было бы через метаданные проверять, конечно. Нас же уже научили ;)
 begin
-    DBMS_OUTPUT.PUT_LINE(doesThisAttributeExists('DEBTORSWITHLOANS', 'JSONLOAN', 'DEBT'));
+    DBMS_OUTPUT.PUT_LINE(doesThisAttributeExists('DEBTORSWITHLOANS', 'JSONLOAN', 'smth'));
 end;
 
 -- 4) Изменить JSON документ
