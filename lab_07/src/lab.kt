@@ -2,6 +2,9 @@ import DEBTORS.firstname
 import com.google.gson.Gson
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.dsl.*
+import me.liuwj.ktorm.expression.SqlExpression
+import me.liuwj.ktorm.expression.SqlFormatter
+import me.liuwj.ktorm.expression.UpdateExpression
 import me.liuwj.ktorm.schema.*
 import net.servicestack.func.Func.*
 
@@ -193,6 +196,96 @@ fun LINQToSQL(loans: MutableList<LoanSubject>, debtors: MutableList<Debtor>)
             }
             .orderBy(DEBTORS.firstname.asc())
             .forEach { println("fName: ${it.getString(1)} sName: ${it.getString(2)} debt: ${it.getInt(3)} telNum: ${it.getString(4)}")}
+    print(ANSI_RESET)
+
+    println("\n\n" + ANSI_CYAN + "3) Попробуем что-нибудь добавить, изменить и удалить" + ANSI_RESET)
+    println("\n" + ANSI_CYAN + "Добавляем новый объект долга в таблицу и выводим его" + ANSI_RESET)
+    database
+            .insert(LOANSUBJECTS) {
+                set(it.debt, 333)
+                set(it.price, 666)
+                set(it.purchasedate, "2010-06-06")
+                set(it.subjectname, "TEST")
+            }
+    print(ANSI_YELLOW)
+    database
+            .from(LOANSUBJECTS)
+            .select(LOANSUBJECTS.loanid, LOANSUBJECTS.subjectname)
+            .where {
+                val conditions = ArrayList<ColumnDeclaring<Boolean>>()
+
+                conditions += LOANSUBJECTS.subjectname eq "TEST"
+                conditions.reduce { a, b -> a and b }
+            }
+            .forEach { println("New is : id = ${it.getInt(1)} name = ${it.getString(2)}") }
+    print(ANSI_RESET)
+
+    println("\n" + ANSI_CYAN + "Поменяем имя объекта на TEST2" + ANSI_RESET)
+    database
+            .update(LOANSUBJECTS) {
+                set(it.subjectname, "TEST2")
+                where {
+                    it.subjectname eq "TEST"
+                }
+            }
+
+    print(ANSI_YELLOW)
+    database
+            .from(LOANSUBJECTS)
+            .select(LOANSUBJECTS.loanid, LOANSUBJECTS.subjectname)
+            .where {
+                val conditions = ArrayList<ColumnDeclaring<Boolean>>()
+
+                conditions += LOANSUBJECTS.subjectname eq "TEST2"
+                conditions.reduce { a, b -> a and b }
+            }
+            .forEach { println("New is : id = ${it.getInt(1)} name = ${it.getString(2)}") }
+    print(ANSI_RESET)
+
+    println("\n" + ANSI_CYAN + "И удалим созданное непотребство" + ANSI_RESET)
+
+    database
+            .delete(LOANSUBJECTS) { it.subjectname eq "TEST2" }
+
+
+    println("\n" + ANSI_CYAN + "Запустим старую-добрую процедуру по уменьшению долга 85-го айдишника\n Было:" + ANSI_RESET)
+
+    print(ANSI_YELLOW)
+    database
+            .from(LOANSUBJECTS)
+            .innerJoin(DEBTORS, on = LOANSUBJECTS.loanid eq DEBTORS.loanid)
+            .select(DEBTORS.debtorid, DEBTORS.lastname, LOANSUBJECTS.debt)
+            .where {
+                val conditions = ArrayList<ColumnDeclaring<Boolean>>()
+
+                conditions += DEBTORS.debtorid eq 85
+
+                conditions.reduce { a, b -> a and b }
+            }
+            .forEach { println("ID: ${it.getString(1)} sName: ${it.getString(2)} debt: ${it.getInt(3)}")}
+    print(ANSI_RESET)
+
+    database.useConnection { connection ->
+        val sql = "call reduceDebt(85, 100)"
+
+        val statement = connection.prepareCall(sql)
+        statement.executeUpdate()
+    }
+
+    println("\n" + ANSI_CYAN + "Стало:" + ANSI_RESET)
+    print(ANSI_YELLOW)
+    database
+            .from(LOANSUBJECTS)
+            .innerJoin(DEBTORS, on = LOANSUBJECTS.loanid eq DEBTORS.loanid)
+            .select(DEBTORS.debtorid, DEBTORS.lastname, LOANSUBJECTS.debt)
+            .where {
+                val conditions = ArrayList<ColumnDeclaring<Boolean>>()
+
+                conditions += DEBTORS.debtorid eq 85
+
+                conditions.reduce { a, b -> a and b }
+            }
+            .forEach { println("ID: ${it.getString(1)} sName: ${it.getString(2)} debt: ${it.getInt(3)}")}
     print(ANSI_RESET)
 }
 
