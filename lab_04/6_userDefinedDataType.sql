@@ -15,5 +15,3 @@ begin
     DBMS_OUTPUT.PUT_LINE(getPhoneBookRecord(666).TELEPHONENUMBER);
     DBMS_OUTPUT.PUT_LINE(getPhoneBookRecord(666).DEBT);
 end;
-
-select * from LOANSUBJECTS;
