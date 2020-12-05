@@ -1,12 +1,11 @@
+import DEBTORS.firstname
 import com.google.gson.Gson
 import me.liuwj.ktorm.database.Database
-import me.liuwj.ktorm.dsl.forEach
-import me.liuwj.ktorm.dsl.from
-import me.liuwj.ktorm.dsl.select
+import me.liuwj.ktorm.dsl.*
 import me.liuwj.ktorm.schema.*
+import net.servicestack.func.Func.*
 
-import net.servicestack.func.Func.join
-import net.servicestack.func.Func.union
+import kotlin.collections.forEach
 
 class LoanSubject(var loanID: Int, var subjectName: String?,
                   var debt: Int, var purchaseDate: String,
@@ -34,24 +33,24 @@ class Debtor(var debtorID: Int, var firstName: String,
 
 object LOANSUBJECTS : Table<Nothing>("LOANSUBJECTS")
 {
-    var loanID = int("loanid").primaryKey()
-    var subjectName = varchar("subjectname")
+    var loanid = int("loanid").primaryKey()
+    var subjectname = varchar("subjectname")
     var debt = int("debt")
-    var purchaseDate = varchar("purchasedate")
+    var purchasedate = varchar("purchasedate")
     var price = int("price")
 }
 
 object DEBTORS : Table<Nothing>("DEBTORS")
 {
-    var debtorID = int("debtorid").primaryKey()
+    var debtorid = int("debtorid").primaryKey()
     var firstname = varchar("firstname")
     var lastname = varchar("lastname")
-    var telephoneNum = varchar("telephonenum")
-    var passportNum = varchar("passportNum")
-    var homeAddress = varchar("homeaddress")
-    var loanID = int("loanid")
-    var bankID = int("bankid")
-    var hangmanID = int("hangmanid")
+    var telephonenum = varchar("telephonenum")
+    var passportnum = varchar("passportNum")
+    var homeaddress = varchar("homeaddress")
+    var loanid = int("loanid")
+    var bankid = int("bankid")
+    var hangmanid = int("hangmanid")
 }
 
 const val ANSI_RESET = "\u001B[0m"
@@ -154,13 +153,47 @@ fun LINQToSQL(loans: MutableList<LoanSubject>, debtors: MutableList<Debtor>)
 //    print(ANSI_YELLOW)
 //    joinDL.forEach { println(it) }
 //    println("AVG: $avg$ANSI_RESET")
-
     val database = Database.connect("jdbc:oracle:thin:@localhost:1521:XE", "oracle.jdbc.driver.OracleDriver", "system", "ninanina1")
+
+    println("\n\n" + ANSI_CYAN + "1) Выведем все те долги, задолженности по которым будут меньше" +
+            "средней задолженности по ВСЕЙ таблице" + ANSI_RESET)
+    var debtAvg : Int = 0
     database
             .from(LOANSUBJECTS)
-            .select(LOANSUBJECTS.subjectName)
-            .forEach { println(it.getString(1))}
+            .select(avg(LOANSUBJECTS.debt))
+            .forEach { debtAvg = it.getInt(1) }
+    print(ANSI_YELLOW)
+    database
+            .from(LOANSUBJECTS)
+            .select(LOANSUBJECTS.loanid, LOANSUBJECTS.subjectname, LOANSUBJECTS.debt)
+            .where {
+                val conditions = ArrayList<ColumnDeclaring<Boolean>>()
+                conditions += LOANSUBJECTS.debt less debtAvg
 
+                conditions.reduce { a, b -> a and b }
+            }
+            .forEach { println("loanID: ${it.getInt(1)} name: ${it.getString(2)} debt: ${it.getInt(3)} avgDebt: $debtAvg") }
+    print(ANSI_RESET)
+
+    println("\n\n" + ANSI_CYAN + "2) Селектим всех должников с номерами телефона, включающих в себя 85, смотрим, у кого долг выше некоторой цифры, " +
+            "а потом выводим всех их отсортированными по имени" + ANSI_RESET)
+    // Выводим информацию о всех тех, чей номер телефона начинается с 85 и долг выше некоторого значения
+    print(ANSI_YELLOW)
+    database
+            .from(LOANSUBJECTS)
+            .innerJoin(DEBTORS, on = LOANSUBJECTS.loanid eq DEBTORS.loanid)
+            .select(DEBTORS.firstname, DEBTORS.lastname, LOANSUBJECTS.debt, DEBTORS.telephonenum)
+            .where {
+                val conditions = ArrayList<ColumnDeclaring<Boolean>>()
+
+                conditions += DEBTORS.telephonenum like "85%"
+                conditions += LOANSUBJECTS.debt greater 800000
+
+                conditions.reduce { a, b -> a and b }
+            }
+            .orderBy(DEBTORS.firstname.asc())
+            .forEach { println("fName: ${it.getString(1)} sName: ${it.getString(2)} debt: ${it.getInt(3)} telNum: ${it.getString(4)}")}
+    print(ANSI_RESET)
 }
 
 
