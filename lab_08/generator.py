@@ -9,9 +9,9 @@ while currentID < 10:
     data = []
     for i in range(50):
         data.append({
-            'debtorID': randint(1, 1000),
-            'value': randint(1, 1000000),
-            'dateOfPayment': "2020-{}-{}".format(randint(1, 12), randint(1, 28))
+            'DEBTORID': randint(85, 1000),
+            'VALUE': randint(1, 1000000),
+            'DATEOFPAYMENT': "2020-{}-{} {}:{}:{}.000".format(randint(1, 12), randint(1, 28), randint(0, 24), randint(0, 59), randint(0, 59))
         })
     curTime = datetime.isoformat(datetime.now(), sep='_', timespec='seconds')
     curTime = curTime.replace(":", "_")
