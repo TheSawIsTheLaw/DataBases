@@ -21,4 +21,4 @@ while currentID < 10:
 
     currentID += 1
     print("Successfully created. I want to sleep... 5 minutes.")
-    sleep(60 * 5)
+    sleep(10)

@@ -9,4 +9,7 @@ create table pays (
     value integer,
     dateOfPayment date not null
 );
+
 select * from pays;
+
+select * from DEBTORS
